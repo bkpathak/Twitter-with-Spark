@@ -28,9 +28,12 @@ public class TwitterStreamReader {
   public static void run(String consumerKey, String consumerSecret, String token, String secret) throws InterruptedException, UnsupportedEncodingException {
 
     Properties properties = new Properties();
-    properties.put("metadata.broker.list", "localhost:9092");
+    // returns the metadata on topics partitions and replicas
+    properties.put("metadata.broker.list", "broker1:9092,broker2:9092");
     properties.put("serializer.class", "kafka.serializer.StringEncoder");
-    Producer<String, Message> producer;
+    properties.put("request.required.acks", "1");
+    ProducerConfig config = new ProducerConfig(properties);
+    Producer<String, String> producer = new Producer<String, String>(config);
 
     // Create an appropriately sized blocking queue
     BlockingQueue<String> queue = new LinkedBlockingQueue<String>(10000);
@@ -53,21 +56,19 @@ public class TwitterStreamReader {
     // Establish a connection
     client.connect();
 
-    //initialize producer
-    ProducerConfig config = new ProducerConfig(properties);
-    producer = new Producer<String, Message>(config);
-
     // Do whatever needs to be done with messages
     for (int msgRead = 0; msgRead < 1000; msgRead++) {
       if (client.isDone()) {
         System.out.println("Client connection closed unexpectedly: " + client.getExitEvent().getMessage());
         break;
       }
-      Message message = new Message(queue.take().getBytes("UTF-8"));
+      String message = queue.take();
+
       if (message == null) {
         System.out.println("No messages!!!");
       } else {
-        producer.send(new KeyedMessage<String, Message>(topic, message));
+        KeyedMessage<String, String> data = new KeyedMessage<String, String>(topic, message);
+        producer.send(data);
       }
     }
     client.stop();
