@@ -65,6 +65,16 @@
         </dependency>
     </dependencies>
 
+    <properties>
+        <!-- this makes maven-tools not bump us to snapshot versions -->
+        <stabilized>true</stabilized>
+        <!-- Fill these in via https://dev.twitter.com/apps -->
+        <consumer.key>TODO</consumer.key>
+        <consumer.secret>TODO</consumer.secret>
+        <access.token>TODO</access.token>
+        <access.token.secret>TODO</access.token.secret>
+    </properties>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -131,6 +141,21 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <configuration>
+                    <mainClass>io.bkpathak.github.TwitterStreamReader</mainClass>
+                    <arguments>
+                        <argument>${consumer.key}</argument>
+                        <argument>${consumer.secret}</argument>
+                        <argument>${access.token}</argument>
+                        <argument>${access.token.secret}</argument>
+                    </arguments>
+                </configuration>
             </plugin>
 
         </plugins>
