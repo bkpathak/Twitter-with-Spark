@@ -1,7 +1,9 @@
 package io.bkpathak.github;
 
+import com.google.common.collect.Lists;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Constants;
+import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
 import com.twitter.hbc.core.endpoint.StatusesSampleEndpoint;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.BasicClient;
@@ -38,10 +40,11 @@ public class TwitterStreamReader {
     // Create an appropriately sized blocking queue
     BlockingQueue<String> queue = new LinkedBlockingQueue<String>(10000);
 
-    // Define our endpoint: By default, delimited=length is set (we need this for our processor)
-    // and stall warnings are on.
-    StatusesSampleEndpoint endpoint = new StatusesSampleEndpoint();
-    endpoint.stallWarnings(false);
+
+    StatusesFilterEndpoint endpoint = new StatusesFilterEndpoint();
+    // add some track terms
+    endpoint.trackTerms(Lists.newArrayList("Spark", "Hadoop", "Storm"));
+
 
     Authentication auth = new OAuth1(consumerKey, consumerSecret, token, secret);
 
@@ -74,5 +77,17 @@ public class TwitterStreamReader {
     client.stop();
     // Print some stats
     System.out.printf("The client read %d messages!\n", client.getStatsTracker().getNumMessages());
+  }
+
+  public static void main(String[] args) {
+
+    try {
+      run(args[0], args[1], args[2], args[3]);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+
   }
 }
